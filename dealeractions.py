@@ -1,15 +1,10 @@
+import random
 deck = []
 suits = ["a", "b", "c", "d"]
 
 gameId = 0
-hands= {
-"playerOneHand": [],
-"playerTwoHand": [],
-"playerThreeHand": [],
-"playerFourHand": [],
-"playerFiveHand": [],
-"playerSixHand": [],
-}
+hands= {}
+numberOfEntrants=3
 Scoreboard = {
 	"playerOne": 0,
 	"playerTwo": 0,
@@ -28,20 +23,30 @@ def buildDeck():
 		deck.append("0J")
 		deck.append("0w")
 
-print hands."playerOneHand"
 
 
-def dealCards(gameRound,players):
-	for i in range(gameRound):
-		for j in range(players):
-			hands[j].value = deck[0]
+def setPlaces(players):
+	for i in range(players):
+		hands['player_hand_{}'.format(i)]=[]
+
+def dealCards(roundNumber):
+	for i in range(roundNumber):
+		for j in hands:
+			hands[j].append(random.choice(deck))
+	print hands
 
 
-
-def playGame(players):
+def playGame(entrants):
+	currentRound = 1
 	buildDeck()
-	dealCards(1,players)
+	setPlaces(entrants)
+	dealCards(currentRound)
+	currentRound += 1
+	dealCards(currentRound)
+	
 
-playGame(4)
+playGame(numberOfEntrants)
+
+
 
 
