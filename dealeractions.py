@@ -26,21 +26,33 @@ def buildDeck():
 
 
 def setPlaces(players):
-	for i in range(players):
+	for i in range(players):		
 		hands['player_hand_{}'.format(i)]=[]
 
 def dealCards(roundNumber):
 	for i in range(roundNumber):
 		for j in hands:
+			nextCard = deck.pop(random.randint(0,len(deck)-1))
 			hands[j].append(random.choice(deck))
 	print hands
+
+def clearHands():
+	for i in hands:
+		hands[i] = []
 
 
 def playGame(entrants):
 	currentRound = 1
 	buildDeck()
 	setPlaces(entrants)
+	print "cards in deck" + str(len(deck))
 	dealCards(currentRound)
+	print "cards in deck" + str(len(deck))
+	#need to add those cards back in to the deck somehow
+	clearHands()
+	currentRound += 1
+	dealCards(currentRound)
+	clearHands()
 	currentRound += 1
 	dealCards(currentRound)
 	
