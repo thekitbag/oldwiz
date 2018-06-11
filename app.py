@@ -1,6 +1,4 @@
-from flask import Flask, render_template
-import gamesmanager
-import gameactions
+from flask import Flask, render_template, request
 
 db = 'wizard.sqlite3' 
 app = Flask(__name__)
@@ -36,4 +34,3 @@ def shutdown():
 if __name__ == "__main__":
   app.run()
 
-print gameactions.actions
