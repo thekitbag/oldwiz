@@ -3,8 +3,9 @@ deck = []
 suits = ["a", "b", "c", "d"]
 
 gameId = 0
+pile = []
 hands= {}
-numberOfEntrants=3
+numberOfEntrants=4
 Scoreboard = {
 	"playerOne": 0,
 	"playerTwo": 0,
@@ -21,7 +22,7 @@ def buildDeck():
 			deck.append(card)
 	for i in range(4):
 		deck.append("0J")
-		deck.append("0w")
+		deck.append("0W")
 
 
 
@@ -33,28 +34,40 @@ def dealCards(roundNumber):
 	for i in range(roundNumber):
 		for j in hands:
 			nextCard = deck.pop(random.randint(0,len(deck)-1))
-			hands[j].append(random.choice(deck))
-	print hands
+			hands[j].append(nextCard)
+	
 
 def clearHands():
-	for i in hands:
-		hands[i] = []
+	for i in range(len(hands['player_hand_1'])):
+		for j in hands:
+			cards = hands[j].pop()
+			deck.append(cards)
 
 
 def playGame(entrants):
 	currentRound = 1
 	buildDeck()
-	setPlaces(entrants)
-	print "cards in deck" + str(len(deck))
+	setPlaces(entrants)	
 	dealCards(currentRound)
-	print "cards in deck" + str(len(deck))
-	#need to add those cards back in to the deck somehow
+	print hands
+	print deck
+	print len(deck)
+	clearHands()	
+	print"----------------"
+	currentRound +=1		
+	dealCards(currentRound)
+	print hands
+	print deck
+	print len(deck)
 	clearHands()
-	currentRound += 1
+	print"----------------"
+	currentRound +=1		
 	dealCards(currentRound)
-	clearHands()
-	currentRound += 1
-	dealCards(currentRound)
+	print hands
+	print deck
+	print len(deck)
+	
+	
 	
 
 playGame(numberOfEntrants)
