@@ -1,13 +1,6 @@
-deck = []
-
-suits = ["a", "b", "c", "d"]
-
-for i in range(1,14):
-	for j in suits:
-		card = str(i)+j
-		deck.append(card)
-for i in range(4):
-	deck.append("0J")
-	deck.append("0w")
-print deck
-
+player_1_input = []
+player_2_input = []
+player_3_input = []
+player_4_input = []
+player_5_input = []
+player_6_input = []

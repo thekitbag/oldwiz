@@ -5,7 +5,7 @@ suits = ["a", "b", "c", "d"]
 gameId = 0
 pile = []
 hands= {}
-numberOfEntrants=4
+numberOfEntrants=5
 Scoreboard = {
 	"playerOne": 0,
 	"playerTwo": 0,
@@ -24,8 +24,6 @@ def buildDeck():
 		deck.append("0J")
 		deck.append("0W")
 
-
-
 def setPlaces(players):
 	for i in range(players):		
 		hands['player_hand_{}'.format(i)]=[]
@@ -34,8 +32,7 @@ def dealCards(roundNumber):
 	for i in range(roundNumber):
 		for j in hands:
 			nextCard = deck.pop(random.randint(0,len(deck)-1))
-			hands[j].append(nextCard)
-	
+			hands[j].append(nextCard)	
 
 def clearHands():
 	for i in range(len(hands['player_hand_1'])):
@@ -43,32 +40,23 @@ def clearHands():
 			cards = hands[j].pop()
 			deck.append(cards)
 
+def checkIfPlayIsValid():
+	pass
+
 
 def playGame(entrants):
+	totalRounds = 60/numberOfEntrants
 	currentRound = 1
 	buildDeck()
-	setPlaces(entrants)	
-	dealCards(currentRound)
-	print hands
 	print deck
-	print len(deck)
-	clearHands()	
-	print"----------------"
-	currentRound +=1		
-	dealCards(currentRound)
-	print hands
-	print deck
-	print len(deck)
-	clearHands()
-	print"----------------"
-	currentRound +=1		
-	dealCards(currentRound)
-	print hands
-	print deck
-	print len(deck)
-	
-	
-	
+	setPlaces(entrants)
+	for i in range(totalRounds):
+		dealCards(currentRound)
+		print hands
+		clearHands()
+		print"-------END OF ROUND%s---------" %(currentRound)
+		print " "
+		currentRound += 1		
 
 playGame(numberOfEntrants)
 

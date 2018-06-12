@@ -1,16 +1,15 @@
 $(function(){
-	$('#killserver').click(function(){
-		
+	$('#choosePlayersubmit').click(function(){
 		$.ajax({
-			url: '/shutdown',
+			url: '/choosePlayers',
 			data: $('form').serialize(),
 			type: 'POST',
 			success: function(response){
-				console.log(response)
+				console.log(response);
 			},
 			error: function(error){
 				console.log(error);
 			}
-		});		
-	});	
+		});
+	});
 });

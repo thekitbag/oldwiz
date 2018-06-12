@@ -16,6 +16,11 @@ def showLobby():
 def showGame():
     return render_template('game.html')
 
+#routes for getting player actions
+@app.route('/choosePlayers',methods=['POST','GET'])
+def choosePlayers():
+        numberOfPlayers = request.args.get('choosePlayers')
+        return "number of players =" + str(numberOfPlayers)
 
 #route for shutting down the sserver
 def shutdown_server():
