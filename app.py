@@ -19,7 +19,7 @@ def showGame():
 #routes for getting player actions
 @app.route('/choosePlayers',methods=['POST','GET'])
 def choosePlayers():
-        numberOfPlayers = request.args.get('choosePlayers')
+        numberOfPlayers = request.form['choosePlayers']
         return "number of players =" + str(numberOfPlayers)
 
 #route for shutting down the sserver

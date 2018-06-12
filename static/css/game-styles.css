@@ -1,0 +1,11 @@
+#choosePlayersubmit {
+	height:20px;
+	width:100px;
+	background-color: grey;
+	border-radius: 5px
+
+}
+
+#choosePlayersubmit:hover {
+	cursor: pointer
+}
