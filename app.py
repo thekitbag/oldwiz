@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, json
+
+import dealeractions
 
 db = 'wizard.sqlite3' 
 app = Flask(__name__)
@@ -19,8 +21,12 @@ def showGame():
 #routes for getting player actions
 @app.route('/choosePlayers',methods=['POST','GET'])
 def choosePlayers():
-        numberOfPlayers = request.form['choosePlayers']
-        return "number of players =" + str(numberOfPlayers)
+        numberOfPlayers = int(request.form['choosePlayers'])
+        dealeractions.buildDeck()
+        dealeractions.setPlaces(numberOfPlayers)
+        dealeractions.dealCards(1)        
+        allHands = json.dumps(dealeractions.hands)
+        return allHands          
 
 #route for shutting down the sserver
 def shutdown_server():

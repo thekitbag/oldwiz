@@ -5,7 +5,6 @@ suits = ["a", "b", "c", "d"]
 gameId = 0
 pile = []
 hands= {}
-numberOfEntrants=5
 Scoreboard = {
 	"playerOne": 0,
 	"playerTwo": 0,
@@ -43,7 +42,7 @@ def clearHands():
 def checkIfPlayIsValid():
 	pass
 
-
+"""
 def playGame(entrants):
 	totalRounds = 60/numberOfEntrants
 	currentRound = 1
@@ -59,7 +58,7 @@ def playGame(entrants):
 		currentRound += 1		
 
 playGame(numberOfEntrants)
-
+"""
 
 
 

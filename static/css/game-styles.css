@@ -9,3 +9,17 @@
 #choosePlayersubmit:hover {
 	cursor: pointer
 }
+
+#game-space {
+	height: 100px;
+	width: 100%;
+	background-color: magenta
+}
+
+.game-pod {
+	height:50px;
+	width: 200px;
+	border-radius: 5px;
+	background-color: black;
+	float: left;
+}
