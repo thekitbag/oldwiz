@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, json
+import sqlite3
 
 import dealeractions
+import usermanager
 
-db = 'wizard.sqlite3' 
+db = 'wizard.sqlite' 
 app = Flask(__name__)
 app.debug = True
 
@@ -26,7 +28,26 @@ def choosePlayers():
         dealeractions.setPlaces(numberOfPlayers)
         dealeractions.dealCards(1)        
         allHands = json.dumps(dealeractions.hands)
-        return allHands          
+        return allHands 
+
+#routes for user management  
+@app.route('/log-in',methods=['POST','GET'])
+def logIn():
+        username = request.form['inputUsername']
+        password = request.form['inputPassword']
+        print username
+        print password 
+        conn = sqlite3.connect(db)
+        conn.text_factory = str
+        c = conn.cursor()
+        c.execute("SELECT MEMBER_ID FROM USERS WHERE USERNAME = ? AND PASSWORD_HASH= ?;", (username, password))        
+        results = c.fetchall()
+        print results
+        if len(results) > 0:
+            token = usermanager.createToken()
+            return token       
+        else:
+            return "Log in failed"
 
 #route for shutting down the sserver
 def shutdown_server():

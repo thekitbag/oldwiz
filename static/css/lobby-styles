@@ -1,0 +1,7 @@
+#log-in-form {
+	width: 50%;
+	height: 70%;
+	margin: auto;
+	border: 2px, black, solid;
+	background: grey;
+}
