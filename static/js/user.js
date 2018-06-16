@@ -8,8 +8,11 @@ $(function(){
 				if (response == "Log in failed") {
 					console.log(response);
 				} else {
-					setToken(response);
+					var parsed_response = JSON.parse(response)
+					setToken(parsed_response['token']);
+					setUsername(parsed_response['username'])
 					console.log(token);
+					console.log(username)
 				}
 								
 			},
@@ -21,7 +24,12 @@ $(function(){
 });
 
 var token = "";
+var username = ""
 
 function setToken(serverToken) {
 	token = serverToken;
+}
+
+function setUsername(dbname) {
+	username = dbname;
 }

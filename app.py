@@ -3,6 +3,7 @@ import sqlite3
 
 import dealeractions
 import usermanager
+import gamesmanager
 
 db = 'wizard.sqlite' 
 app = Flask(__name__)
@@ -19,6 +20,14 @@ def showLobby():
 @app.route("/game")
 def showGame():
     return render_template('game.html')
+
+
+#routes for getting available games
+@app.route('/getActiveGames',methods=['GET'])
+def getActiveGames():          
+        games = json.dumps(gamesmanager.games)
+        return games 
+
 
 #routes for getting player actions
 @app.route('/choosePlayers',methods=['POST','GET'])
@@ -45,7 +54,7 @@ def logIn():
         print results
         if len(results) > 0:
             token = usermanager.createToken()
-            return token       
+            return json.dumps({'username': username, 'token':token})      
         else:
             return "Log in failed"
 
