@@ -3,21 +3,21 @@ games = {0:
 			'id': 0,
 			'players':4,
 			'status': 'open',
-	        'entrants':["test"]
+	        'entrants':["Shannon"]
 	        },
 	    1:
 	        {
 	        'id': 1,
 	        'players':3,
 	        'status': 'open',
-	        'entrants':["a", "b"]
+	        'entrants':["Steven", "Elaine", "Michael"]
 	        },
 	    2:
 	        {
 	        'id': 2,
 	        'players':4,
 	        'status': 'running',
-	        'entrants':["a", "b"]
+	        'entrants':["x", "y"]
 	        }
 }
 
@@ -33,4 +33,12 @@ def addGame(players):
 def registerPlayer(game, player):
 	games[game]['entrants'].append(player)
 
+def getTournamentInfo(player):
+	for i in games:
+		if player in games[i]['entrants']:
+			return games[i]
+		
 
+
+
+			

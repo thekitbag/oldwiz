@@ -8,5 +8,3 @@ def createToken():
 		picks.append(str(characters[randint(0,len(characters)-1)]))
 	token = "".join(picks)
 	return token
-
-print createToken()

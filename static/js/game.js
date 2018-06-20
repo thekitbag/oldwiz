@@ -1,26 +1,8 @@
-$(function(){
-	$('#choosePlayersubmit').click(function(){
-		$.ajax({
-			url: '/choosePlayers',
-			data: $('form').serialize(),
-			type: 'POST',
-			success: function(response){
-				var parsedCards = JSON.parse(response);
-				var response_keys = Object.keys(parsedCards);
-				var num_of_player = response_keys.length;
-				console.log(num_of_player);
-				displayPods(num_of_player);				
-			},
-			error: function(error){
-				console.log(error);
-			}
-		});
-	});
-});
+var game_id = -1;
+var user = localStorage.getItem('username');
+var game_data = {}
 
-function parseReponse(json) {
-	
-}
+
 
 function displayCards(cards) {
 	var parsedCards = JSON.parse(cards)
@@ -36,3 +18,26 @@ function displayPods(players) {
 		document.getElementById("game-space").appendChild(createPod);
 	}
 }
+
+function getGameInfo() {
+	$.ajax({
+		type: 'POST',
+		contentType: 'application/json',
+		url: '/getTournamentInfo',
+		data: JSON.stringify({'user': user}),		
+		success: function(response){
+			game_data = JSON.parse(response);
+		},
+		error: function(error){
+			console.log(error);
+		}
+	});
+}
+
+$(document).ready(function() {
+	getGameInfo();			
+});
+
+$(document).on("click","#choosePlayersubmit",function(){
+	displayPods(game_data['players']);			
+});

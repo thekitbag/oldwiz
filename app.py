@@ -26,32 +26,52 @@ def showGame():
 @app.route('/getActiveGames',methods=['GET'])
 def getActiveGames():          
         games = json.dumps(gamesmanager.games)
-        return games 
+        return games
+
+@app.route('/registerUser',methods=['POST','GET'])
+def registerUser():
+        jsonData = request.get_json()          
+        username = str(jsonData['username'])
+        game = int(jsonData['gameID'])
+        gamesmanager.registerPlayer(game,username)
+        return "Registration Succesful"
+
+@app.route('/getTournamentInfo',methods=['POST','GET'])
+def getTournamentInfo():
+        jsonData = request.get_json()          
+        user = str(jsonData['user'])
+        game_details = gamesmanager.getTournamentInfo(user)
+        return json.dumps(game_details)
 
 
 #routes for getting player actions
-@app.route('/choosePlayers',methods=['POST','GET'])
-def choosePlayers():
+"""@app.route('/startGame',methods=['POST','GET'])
+def startGame():
         numberOfPlayers = int(request.form['choosePlayers'])
         dealeractions.buildDeck()
         dealeractions.setPlaces(numberOfPlayers)
         dealeractions.dealCards(1)        
         allHands = json.dumps(dealeractions.hands)
-        return allHands 
+        return allHands """
+
+def startGame():
+    #create an instance of a game in dealeractions with all the necessary bits, set the leaderboard, seats, gameID, using data from the gamesmanager 
+    abc = dealeractions.GameInstance()
+    abc.gameId=2
+    print abc.__dict__
+
+        
 
 #routes for user management  
 @app.route('/log-in',methods=['POST','GET'])
 def logIn():
         username = request.form['inputUsername']
         password = request.form['inputPassword']
-        print username
-        print password 
         conn = sqlite3.connect(db)
         conn.text_factory = str
         c = conn.cursor()
         c.execute("SELECT MEMBER_ID FROM USERS WHERE USERNAME = ? AND PASSWORD_HASH= ?;", (username, password))        
         results = c.fetchall()
-        print results
         if len(results) > 0:
             token = usermanager.createToken()
             return json.dumps({'username': username, 'token':token})      
@@ -75,3 +95,4 @@ def shutdown():
 if __name__ == "__main__":
   app.run()
 
+startGame()

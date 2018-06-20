@@ -11,17 +11,33 @@
 	width:100%;
 }
 
+
 #log-in-btn {
 	height: 50px;
-	width: 150px;
-	background-color: green;
-	border-radius: 5px;
+	width: 150px;	
 }
+
+
 
 #games-list {
     width: 100%;
     height: 500px;
     border: 2px solid black;
+}
+
+.btn {
+	background-color: green;
+	border-radius: 5px;
+
+}
+
+.btn:hover {
+	cursor: pointer;
+	background-color: lime;
+}
+
+.btn:active {
+	background-color: #014421;
 }
 
 .game {
@@ -35,4 +51,10 @@
     height: 80px;
     border: 2px solid black;
     float: left;
+}
+
+.reg {
+    float: left;
+    width: 100px;
+    height: 50px;
 }
