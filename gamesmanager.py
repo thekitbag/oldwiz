@@ -33,10 +33,12 @@ def addGame(players):
 def registerPlayer(game, player):
 	games[game]['entrants'].append(player)
 
-def getTournamentInfo(player):
+def findUserGame(name):
 	for i in games:
-		if player in games[i]['entrants']:
-			return games[i]
+		if name in games[i]['entrants']:
+			return i
+
+
 		
 
 

@@ -1,4 +1,3 @@
-var game_id = -1;
 var user = localStorage.getItem('username');
 var game_data = {}
 
@@ -20,11 +19,12 @@ function displayPods(players) {
 }
 
 function getGameInfo() {
+	game = {'player_name': user}
 	$.ajax({
 		type: 'POST',
 		contentType: 'application/json',
-		url: '/getTournamentInfo',
-		data: JSON.stringify({'user': user}),		
+		url: '/getGameInfo',
+		data: JSON.stringify(game),		
 		success: function(response){
 			game_data = JSON.parse(response);
 		},
