@@ -25,8 +25,13 @@ def showGame():
 #routes for getting available games
 @app.route('/getActiveGames',methods=['GET'])
 def getActiveGames():          
-        games = json.dumps(gamesmanager.games)
-        return games
+        allGames = gamesmanager.games
+        activeGames = {}
+        for i in allGames:
+            if allGames[i]['status'] == 'open':
+                activeGames[i]=allGames[i]
+        return json.dumps(activeGames)
+        
 
 @app.route('/registerUser',methods=['POST','GET'])
 def registerUser():
@@ -34,7 +39,29 @@ def registerUser():
         username = str(jsonData['username'])
         game = int(jsonData['gameID'])
         gamesmanager.registerPlayer(game,username)
-        return "Registration Succesful"
+        registered = False
+        for i in gamesmanager.games:
+            if username in gamesmanager.games[i]['entrants']:
+                registered = True
+        if registered == True:
+            return "Registration Succesful"
+        else: return "Registration Failed"
+
+@app.route('/getGameStatus', methods=['POST', 'GET'])
+def getGameStatus():
+    data = request.get_json()
+    player = str(dataata['username'])
+    game = int(data['gameID'])
+    status = gamesmanager.games[game]['status']
+    gamesize = gamesmanager.games[game]['players']
+    entrants = gamesmanager.games[game]['entrants']
+    gameFull = False
+    if len(entrants) == gamesize:
+        return "Game Full, starting game..."
+    else:
+        return json.dumps('entrants',entrants)
+
+
 
 @app.route('/getTournamentInfo',methods=['POST','GET'])
 def getTournamentInfo():
@@ -44,15 +71,7 @@ def getTournamentInfo():
         return json.dumps(game_details)
 
 
-#routes for getting player actions
-"""@app.route('/startGame',methods=['POST','GET'])
-def startGame():
-        numberOfPlayers = int(request.form['choosePlayers'])
-        dealeractions.buildDeck()
-        dealeractions.setPlaces(numberOfPlayers)
-        dealeractions.dealCards(1)        
-        allHands = json.dumps(dealeractions.hands)
-        return allHands """
+
 
 def startGame():
     #create an instance of a game in dealeractions with all the necessary bits, set the leaderboard, seats, gameID, using data from the gamesmanager 

@@ -57,7 +57,11 @@ function registerUser(tournament){
 		url: '/registerUser',
 		data: JSON.stringify(reg_details),		
 		success: function(response){
-			console.log("success");
+			if (response == "Registration Succesful"){
+				location.href="/game";
+			} else {
+				console.log(response);				
+			}
 		},
 		error: function(error){
 			console.log(error);
@@ -78,21 +82,12 @@ function refresh() {
     setTimeout(refresh, 10000);    
 }
 
-function takeUserToGame(data) {	
-	for (var i=0; i < Object.keys(data).length; i++){
-		for (var j = 0; j < data[i]['entrants'].length; j++)
-			if (user == data[i]['entrants'][j] && data[i]['players'] == 4){
-				location.href="/game";
-			} 
-	}
-}
-
-$(document).ready(function() {
-	refresh();	
-});
-
 $(document).on("click",".reg",function(){
 	buttonid = this.id;
 	tournamentid = buttonid[3];
 	registerUser(tournamentid);			
+});
+
+$(document).ready(function() {
+    refresh();    
 });
