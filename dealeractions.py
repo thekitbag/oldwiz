@@ -1,10 +1,10 @@
 import random
 
 class GameInstance():
-	def __init__(self):
+	def __init__(self, gameId):
+		self.gameId= gameId
 		self.deck = []
-		self.suits = ["a","b","c","d"]
-		self.gameId = -1
+		self.suits = ["a","b","c","d"]		
 		self.pile = []
 		self.hands= {}
 		self.players =[]

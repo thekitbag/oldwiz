@@ -1,6 +1,6 @@
-var game_id = -1;
 var user = localStorage.getItem('username');
 var game_data = {}
+var game_started = false
 
 
 
@@ -20,11 +20,12 @@ function displayPods(players) {
 }
 
 function getGameInfo() {
+	game = {'player_name': user}
 	$.ajax({
 		type: 'POST',
 		contentType: 'application/json',
-		url: '/getTournamentInfo',
-		data: JSON.stringify({'user': user}),		
+		url: '/getGameInfo',
+		data: JSON.stringify(game),		
 		success: function(response){
 			game_data = JSON.parse(response);
 		},
@@ -34,10 +35,29 @@ function getGameInfo() {
 	});
 }
 
+function displayPreGameInfo() {
+	//will display the names of the current regustrants and how many players we're waititng for
+	console.log("waiting")
+}
+
+function displayGameInfo() {
+	//will display all of the players and their cards
+	console.log("started")
+}
+
+function refresh() {
+	getGameInfo()
+	displayPreGameInfo()
+    setTimeout(refresh, 10000);    
+}
+
+
 $(document).ready(function() {
-	getGameInfo();			
+	while (game_started == true) {
+		refresh();
+	}
+	if (game_started == false) {
+		displayGameInfo();
+	}
 });
 
-$(document).on("click","#choosePlayersubmit",function(){
-	displayPods(game_data['players']);			
-});

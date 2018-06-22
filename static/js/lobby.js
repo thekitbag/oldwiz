@@ -7,7 +7,6 @@ function populateLobby() {
 			success: function(response){
 				parsed_response = JSON.parse(response);
 				addGamesToList(parsed_response);
-				takeUserToGame(parsed_response);
 			},
 			error: function(error){
 				console.log(error);

@@ -47,37 +47,24 @@ def registerUser():
             return "Registration Succesful"
         else: return "Registration Failed"
 
-@app.route('/getGameStatus', methods=['POST', 'GET'])
-def getGameStatus():
+
+
+@app.route('/getGameInfo', methods=['POST', 'GET'])
+def getGameInfo():
     data = request.get_json()
-    player = str(dataata['username'])
-    game = int(data['gameID'])
-    status = gamesmanager.games[game]['status']
-    gamesize = gamesmanager.games[game]['players']
-    entrants = gamesmanager.games[game]['entrants']
+    user = str(data['player_name'])
+    user_game_id = gamesmanager.findUserGame(user)
+    print user_game_id
+    status = gamesmanager.games[user_game_id]['status']
+    gamesize = gamesmanager.games[user_game_id]['players']
+    entrants = gamesmanager.games[user_game_id]['entrants']
     gameFull = False
     if len(entrants) == gamesize:
-        return "Game Full, starting game..."
+        gamesmanager.startGame(user_game_id)
+        return json.dumps(gamesmanager.games[user_game_id]['gameInfo'])
     else:
-        return json.dumps('entrants',entrants)
+        return json.dumps(entrants)
 
-
-
-@app.route('/getTournamentInfo',methods=['POST','GET'])
-def getTournamentInfo():
-        jsonData = request.get_json()          
-        user = str(jsonData['user'])
-        game_details = gamesmanager.getTournamentInfo(user)
-        return json.dumps(game_details)
-
-
-
-
-def startGame():
-    #create an instance of a game in dealeractions with all the necessary bits, set the leaderboard, seats, gameID, using data from the gamesmanager 
-    abc = dealeractions.GameInstance()
-    abc.gameId=2
-    print abc.__dict__
 
         
 
@@ -114,4 +101,3 @@ def shutdown():
 if __name__ == "__main__":
   app.run()
 
-startGame()
