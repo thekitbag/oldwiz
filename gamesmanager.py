@@ -26,6 +26,7 @@ def findUserGame(name):
 		if name in games[i]['entrants']:
 			return i
 
+<<<<<<< HEAD
 def startGame(gameId):
 	a = dealeractions.GameInstance(gameId)
 	a.players = games[gameId]['entrants']
@@ -53,6 +54,10 @@ second_test_game.setScoreboard()
 second_test_game.buildDeck()
 second_test_game.setPlaces(second_test_game.players)
 second_test_game.dealCards(4)"""
+=======
+
+		
+>>>>>>> e0a58d33868e5a50fe5d2bb777f86fb8c527141a
 
 
 

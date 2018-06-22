@@ -64,6 +64,16 @@ def getGameInfo():
         return json.dumps(gamesmanager.games[user_game_id]['gameInfo'])
     else:
         return json.dumps(entrants)
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+
+>>>>>>> e0a58d33868e5a50fe5d2bb777f86fb8c527141a
 
 
         
