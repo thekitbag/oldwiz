@@ -42,21 +42,5 @@ class GameInstance():
 				cards = self.hands[j].pop()
 				self.deck.append(cards)
 		
-"""test_game = GameInstance()
-test_game.gameId = 1
-test_game.players = ["Mark","Shannon","Ant","Gabby"]
-test_game.setScoreboard()
-test_game.buildDeck()
-test_game.setPlaces(test_game.players)
-test_game.dealCards(1)
 
-print test_game.__dict__
-
-second_test_game = GameInstance()
-second_test_game.gameId = 2
-second_test_game.players = ["Mike","De","Steve","Elaine"]
-second_test_game.setScoreboard()
-second_test_game.buildDeck()
-second_test_game.setPlaces(second_test_game.players)
-second_test_game.dealCards(4)"""
 
