@@ -3,11 +3,10 @@ class Player():
 		self.member_id = member_id
 		self.name = ""
 		self.authtoken = ""
-		self.active_games = []
+		self.active_game = -1
 
-	def joinGame(self, game_id):
-		self.game_id = game_id
-		floorman.games[game_id]['entrants'].append(self.name)
+	def joinPool(self):
+		Floorman.players[self.member_id]={'name':self.name, 'authtoken':self.authtoken, 'active game':self.active_game}
 
 	def playCard(self, card, game_id):
 		self.card = card
@@ -18,6 +17,11 @@ class Player():
 		self.declaration = declaration
 		self.game_id = game_id
 		print "bar"
+
+	def findActiveGames(self):
+		for i in Floorman.games:
+			if self.name in Floorman.games[i]['players']:
+				print i
 
 class Game():
 	def __init__(self,game_id):
@@ -30,9 +34,8 @@ class Game():
 		self.deck = []
 
 class Dealer():
-	def __init__(self):
-		self.suits = ["a","b","c","d"]
-
+	suits = ["a","b","c","d"]
+	deck = []
 
 	def validatePlayer(self, player, token):
 		self.player = player
@@ -42,15 +45,14 @@ class Dealer():
 		else:
 			return False
 
-	def buildDeck(self, game_id):
-		self.game_id = game_id
+	def buildDeck(self):
 		for i in range(1,14):
 			for j in self.suits:
 				card = str(i)+j
-				game_id.deck.append(card)
+				self.deck.append(card)
 		for i in range(4):
-			game_id.deck.append("0J")
-			game_id.deck.append("0W")
+			self.deck.append("0J")
+			self.deck.append("0W")
 
 	def validateMove(self, game_id, card, pile):
 		self.game_id = game_id
@@ -62,50 +64,117 @@ class Dealer():
 			return False
 
 class Floorman():
-	def __init__(self):
-		self.leaderboard = {}
-		self.games = {0:
-			{
-			'id': 0,
-			'players':4,
-	        'entrants':["test1","test2","test3"],	        
-			'status': 'test'
-	        }	    
-		}	
+	games = {0:
+		{
+		'id': 0,
+		'players':4,
+        'entrants':["test1","test2","test3"],	        
+		'status': 'test'
+        }	    
+	}
+
+	game_objects = []
+
+	players = {}
+
+	leaderboard = {}			
 
 	def createGame(self, size):
 		self.size = size		
-		self.games[max(self.games)+1] = {
-		'id': max(self.games)+1,
+		Floorman.games[max(Floorman.games)+1] = {
+		'id': max(Floorman.games)+1,
 		'players': size,
 		'entrants': [],
 		'status': 'open'
 		}
+		game = Game(10)
+		game.status = 'open'
+		game.size = size
+		Floorman.game_objects.append(game)
+
+	def listOpenGames(self):
+		open_games = []
+		for i in Floorman.games:
+			if Floorman.games[i]['status'] == 'open':
+				open_games.append(Floorman.games[i])
+		return open_games
 
 	def cancelGame(self, game_id):
 		self.game_id= game_id
-		self.games[game_id]['status'] = "cancelled"
+		Floorman.games[game_id]['status'] = "cancelled"
 
 	def updateLeaderboard(self):
 		pass
 
+	def addPlayerToGame(self, player, game):
+		self.player = player
+		self.game = game		
+		self.games[game]['entrants'].append(self.players[player]['name'])
+		self.players[player]['active game'] = game
+		if len(self.games[game]['entrants']) == self.games[game]['players']:
+			self.games[game]['status'] = 'started'
 
-a = 3
 
-mark = Player(a)
-mark.name = "Mark"
+	
+	
+
+
 dealer = Dealer()
 floorman = Floorman()
 floorman.createGame(4)
+floorman.createGame(6)
 
-print mark.name
-print mark.member_id
-print"-----"
-print floorman.leaderboard
+
+"""
+floorman.listOpenGames()
+test_player = Player(1001)
+test_player.name = "Mark"
+test_player.authtoken = "abcdefg"
+test_player.joinPool()
+
+
+print floorman.players
 print floorman.games
-print"-----"
-print dealer.suits
-mark.joinGame(1)
+print " ----- "
+floorman.addPlayerToGame(1001,1)
+print floorman.players
 print floorman.games
 
+
+
+name = getattr(Floorman.games[1]['entrants'][0], 'name')
+print name
+
+
+
+
+
+
+floorman.listOpenGames()
+
+userID = 1001
+username = "Mark"
+authtoken = "abcdefg"
+
+player = Player(userID)
+player.name = username
+player.authtoken = authtoken
+
+player.joinGame(1)
+
+floorman.listOpenGames()
+
+
+secondUserID = 1002
+secondUsername = "Shan"
+secondAuthtoken = "hijklmno"
+
+second_player = Player(secondUserID)
+second_player.name = secondUsername
+second_player.authtoken = secondAuthtoken
+
+second_player.joinGame(1)
+
+floorman.listOpenGames()
+"""
 

@@ -1,25 +1,13 @@
-#choosePlayersubmit {
-	height:20px;
-	width:100px;
-	background-color: grey;
-	border-radius: 5px
-
-}
-
-#choosePlayersubmit:hover {
-	cursor: pointer
-}
-
 #game-space {
-	height: 100px;
+	height: 500px;
 	width: 100%;
 	background-color: magenta
 }
 
-.game-pod {
+.pod {
 	height:50px;
 	width: 200px;
 	border-radius: 5px;
-	background-color: black;
+	background-color: grey;
 	float: left;
 }

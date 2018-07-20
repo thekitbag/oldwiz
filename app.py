@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, json
 import sqlite3
 
-import dealeractions
+import gamelogic
 import usermanager
-import gamesmanager
+
 
 db = 'wizard.sqlite' 
 app = Flask(__name__)
@@ -25,12 +25,8 @@ def showGame():
 #routes for getting available games
 @app.route('/getActiveGames',methods=['GET'])
 def getActiveGames():          
-        allGames = gamesmanager.games
-        activeGames = {}
-        for i in allGames:
-            if allGames[i]['status'] == 'open':
-                activeGames[i]=allGames[i]
-        return json.dumps(activeGames)
+        active_games = gamelogic.floorman.listOpenGames()        
+        return json.dumps(active_games)
         
 
 @app.route('/registerUser',methods=['POST','GET'])
@@ -38,44 +34,36 @@ def registerUser():
         jsonData = request.get_json()          
         username = str(jsonData['username'])
         game = int(jsonData['gameID'])
-        gamesmanager.registerPlayer(game,username)
+        player = gamelogic.Player(1001)
+        player.name = username
+        player.authtoken = "abcdefg"
+        player.joinPool()
+        gamelogic.floorman.addPlayerToGame(player.member_id, game)
         registered = False
-        for i in gamesmanager.games:
-            if username in gamesmanager.games[i]['entrants']:
-                registered = True
+        if username in gamelogic.Floorman.games[game]['entrants']:
+            registered = True
         if registered == True:
             return "Registration Succesful"
         else: return "Registration Failed"
+        
 
 
 
 @app.route('/getGameInfo', methods=['POST', 'GET'])
 def getGameInfo():
     data = request.get_json()
-    user = str(data['player_name'])
-    user_game_id = gamesmanager.findUserGame(user)
-    print user_game_id
-    status = gamesmanager.games[user_game_id]['status']
-    gamesize = gamesmanager.games[user_game_id]['players']
-    entrants = gamesmanager.games[user_game_id]['entrants']
-    gameFull = False
-    if len(entrants) == gamesize:
-        gamesmanager.startGame(user_game_id)
-        return json.dumps(gamesmanager.games[user_game_id]['gameInfo'])
-    else:
-        return json.dumps(entrants)
-<<<<<<< HEAD
-=======
-
-
-
-
-
-
-
->>>>>>> e0a58d33868e5a50fe5d2bb777f86fb8c527141a
-
-
+    user = data['member_id']
+    user_game_id = gamelogic.Floorman.players[user]['active game']
+    if gamelogic.Floorman.games[user_game_id]['status'] == 'open':
+        return json.dumps(gamelogic.Floorman.games[user_game_id])
+    elif gamelogic.Floorman.games[user_game_id]['status'] == 'started':
+        game = gamelogic.Game(user_game_id)
+        game.status == 'running'
+        game.size = gamelogic.Floorman.games[user_game_id]['players']
+        dealer = gamelogic.Dealer()
+        dealer.buildDeck()
+        game.deck = dealer.deck
+        return json.dumps(game.deck)
         
 
 #routes for user management  

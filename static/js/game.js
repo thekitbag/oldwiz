@@ -2,32 +2,43 @@ var user = localStorage.getItem('username');
 var game_data = {}
 var game_started = false
 
-
-
-function displayCards(cards) {
-	var parsedCards = JSON.parse(cards)
-	console.log(parsedCards);					
+function createElement(type, className, id){
+	a = document.createElement(type);
+	a.setAttribute("class", className);
+	a.setAttribute("id", id);
+	return a
 }
 
-function displayPods(players) {
-	for (var i = 0 ; i < players; i++){
-		var createPod = document.createElement("div");
-		var pod_id	= "pod" + i;
-		createPod.setAttribute("class", "game-pod");
-		createPod.setAttribute("id", pod_id);
-		document.getElementById("game-space").appendChild(createPod);
-	}
+function attatchElement(element, target){
+	return document.getElementById(target).appendChild(element);
 }
+
+
+/*entrants
+:
+["Mark"]
+id
+:
+2
+players
+:
+4
+status
+:
+"open"
+
+*/
+
 
 function getGameInfo() {
-	game = {'player_name': user}
+	game = {'member_id': 1001}
 	$.ajax({
 		type: 'POST',
 		contentType: 'application/json',
 		url: '/getGameInfo',
 		data: JSON.stringify(game),		
 		success: function(response){
-			game_data = JSON.parse(response);
+			game_data = JSON.parse(response);								
 		},
 		error: function(error){
 			console.log(error);
@@ -35,29 +46,38 @@ function getGameInfo() {
 	});
 }
 
-function displayPreGameInfo() {
-	//will display the names of the current regustrants and how many players we're waititng for
-	console.log("waiting")
-}
+function displayGameInfoOnLoad() {
+	for (var i = 0; i < game_data['players']; i++){
+		var pod = createElement("div", "pod", "pod"+i);
+		pod.innerHTML="empty"
+		attatchElement(pod, "game-space");
+		pod1 = document.getElementById("pod"+i)
+		if (game_data['entrants'][i] != null) {
+			pod1.innerHTML = game_data['entrants'][i];
+		};		
+	};
+};
 
-function displayGameInfo() {
-	//will display all of the players and their cards
-	console.log("started")
-}
-
-function refresh() {
-	getGameInfo()
-	displayPreGameInfo()
-    setTimeout(refresh, 10000);    
+function pollForUpdates() {
+	for (var i = 0; i < game_data['players']; i++){
+		pod1 = document.getElementById("pod"+i)
+		if (game_data['entrants'][i] != null) {
+			pod1.innerHTML = game_data['entrants'][i];
+		};		
+	};
 }
 
 
 $(document).ready(function() {
-	while (game_started == true) {
-		refresh();
-	}
-	if (game_started == false) {
-		displayGameInfo();
-	}
+	getGameInfo();
+	window.setTimeout(function(){
+		displayGameInfoOnLoad();
+	}, 500);	
+	window.setInterval(function(){
+		getGameInfo();
+		window.setTimeout(function(){
+		pollForUpdates();
+	}, 500);		
+}, 5000);		 	
 });
 

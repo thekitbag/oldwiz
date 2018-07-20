@@ -14,37 +14,40 @@ function populateLobby() {
 		});
 }
 
+function createElement(type, className, id){
+	a = document.createElement(type);
+	a.setAttribute("class", className);
+	a.setAttribute("id", id);
+	return a
+}
 
+function attatchElement(element, target){
+	return document.getElementById(target).appendChild(element);
+}
+
+
+//[{"entrants": ["Mark"], "id": 1, "players": 4, "status": "open"}, {"entrants": ["Mark"], "id": 2, "players": 5, "status": "open"}]
 function addGamesToList(gamedata){
-	var number_of_games = (Object.keys(gamedata).length);
+	var number_of_games = gamedata.length	
 	for (var i = 0; i < number_of_games; i++) {
-		var game = document.createElement("div");
-		game.setAttribute("class", "game");
-		game.setAttribute("id", "game"+i);
-		document.getElementById("games-list").appendChild(game);		
-		var gamebox = document.getElementById("game"+i);
-		var number_of_data_points = (Object.keys(gamedata[i]).length);		
+		var game = createElement("div", "game", "game"+i)
+		attatchElement(game,"games-list");	
+		number_of_data_points = Object.keys(gamedata[i]).length;		
 		for (var j = 0; j < number_of_data_points; j++){
-			var gameboxinfo = document.createElement("div");
-			var infotitle = document.createElement("div");
-			var infovalue = document.createElement("div");						
-			var key = (Object.keys(gamedata[i])[j]);
+			var key = Object.keys(gamedata[i])[j];
 			var value = gamedata[i][key];
-			gameboxinfo.setAttribute("class", "game-info");
-			infotitle.setAttribute("class", "title");
-			infovalue.setAttribute("class", "value");
-			gameboxinfo.setAttribute("id", "game-"+key);			
-			gamebox.appendChild(gameboxinfo);
+			var gameboxinfo = createElement("div", "game-info", "game-"+key);
+			var infotitle = createElement("div", "title", "info-"+key);
+			var infovalue = createElement("div", "value-"+value);
+			attatchElement(gameboxinfo, "game"+i)
 			gameboxinfo.appendChild(infotitle);
 			gameboxinfo.appendChild(infovalue);
 			infotitle.innerHTML = key;
 			infovalue.innerHTML = value;
 		}
-		var regbutton = document.createElement("div");
-		regbutton.setAttribute("class", "btn reg");
-		regbutton.setAttribute("id", "reg"+i);
+		var regbutton = createElement("div", "btn reg", "reg"+gamedata[i]['id']);
 		regbutton.innerHTML = "Register";
-		gamebox.appendChild(regbutton);
+		attatchElement(regbutton, "game"+i)
 	}	
 }
 
