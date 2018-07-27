@@ -1,180 +1,268 @@
+import random
+import collections
+
+class Card():
+	suits = ["none","A","B","C","D"]
+	ranks = ["0","1","2","3","4","5","6","7","8","9","10","11","12","13"]
+
+	def __init__(self,suit_index,rank):
+		self.suit_index = suit_index
+		self.rank = rank
+		self.suit = Card.suits[suit_index]
+
+	def __repr__(self):
+		return '%s%s' %(Card.ranks[self.rank],Card.suits[self.suit_index])
+
+
+class Deck():
+	def __init__(self):
+		self.cards = []
+		for suit in range(1,5):
+			for rank in range (1,14):
+				card = Card(suit,rank)
+				self.cards.append(card)
+		random.shuffle(self.cards)
+
+	def __str__(self):
+		res = []
+		for card in self.cards:
+			res.append(str(card))
+		return '\n'.join(res)
+	
+	def randomCard(self):
+		#deals a card to each player based on what round it is		
+		self.card = self.cards.pop()
+		return self.card
+
+
 class Player():
-	def __init__(self,member_id):
-		self.member_id = member_id
-		self.name = ""
-		self.authtoken = ""
-		self.active_game = -1
+	member_id_count = 0
+	def __init__(self):
+		self.member_id = self.member_id_count + 1
+		Player.member_id_count += 1
+		self.username = ""
+		self.auth_token = ""
+		self.hand = []	
 
-	def joinPool(self):
-		Floorman.players[self.member_id]={'name':self.name, 'authtoken':self.authtoken, 'active game':self.active_game}
+	def register(self, game):
+		self.game = game		
+		game.scoreboard[self] = 0
+		current_player_count = len(game.entrants)
+		game.seats[current_player_count] = self
+		game.entrants.append(self)
+		game.trick_count[self] = 0	
 
-	def playCard(self, card, game_id):
-		self.card = card
-		self.game_id = game_id
-		print "foo"
+	def playCard(self, card):		
+		if Dealer.is_valid_move(card, self.game.pile, self.hand) ==  "first card":
+			self.game.pile['valid_suit'] = card.suit
+			self.game.pile[self] = card
+			self.hand.remove(card)
+		elif Dealer.is_valid_move(card, self.game.pile, self.hand) ==  True and card in self.hand:						
+			self.game.pile[self] = card
+			self.hand.remove(card)
+		else: 
+			raise ValueError('invalid move')			
 
-	def declare(self,declaration, game_id):
-		self.declaration = declaration
-		self.game_id = game_id
-		print "bar"
+	def __repr__(self):
+		return self.username
 
-	def findActiveGames(self):
-		for i in Floorman.games:
-			if self.name in Floorman.games[i]['players']:
-				print i
-
-class Game():
-	def __init__(self,game_id):
-		self.game_id= game_id
-		self.status = ""
-		self.size = 0
-		self.scoreboard = {}
-		self.pile = []
-		self.hands = {}
-		self.deck = []
 
 class Dealer():
-	suits = ["a","b","c","d"]
-	deck = []
-
-	def validatePlayer(self, player, token):
-		self.player = player
-		self.token = token
-		if 1 > 0:
+	@classmethod
+	def is_valid_move(cls, card, pile, hand):
+		available_cards = []				
+		if len(pile) == 0:
+			return "first card"
+		else:
+			for i in hand:
+				if i.suit == pile ['valid_suit']:
+					available_cards.append(i)
+		if card.suit == pile['valid_suit']:
 			return True
+		elif len(available_cards) == 0:
+			return True		
 		else:
 			return False
 
-	def buildDeck(self):
-		for i in range(1,14):
-			for j in self.suits:
-				card = str(i)+j
-				self.deck.append(card)
-		for i in range(4):
-			self.deck.append("0J")
-			self.deck.append("0W")
+	@classmethod
+	def declareWinner(cls, game):
+		cards = []
+		card_ranks = []
+		valid_suit = game.pile['valid_suit']
+		del game.pile['valid_suit'] 	
+		for i in game.pile.values():
+			if i.__class__ == Card and i.suit == valid_suit:
+				cards.append(i)
+		for i in cards:
+			card_ranks.append(i.rank)
+		for player in game.pile.keys():
+			if game.pile[player].rank == max(card_ranks) and game.pile[player] in cards:
+				print ""
+				print "%s wins this trick" %(player)
+				print ""
+				game.trick_count[player] += 1
+		game.pile.clear()		
 
-	def validateMove(self, game_id, card, pile):
-		self.game_id = game_id
-		self.card = card
-		self.pile = pile
-		if 1 > 0:
-			return True
-		else:
-			return False
+	@classmethod
+	def requestActions(cls, game):
+		active_player = game.button_position
+		for player in range(game.size):
+			player = game.seats[active_player]
+			print "%s's Cards %s" %(player, player.hand)
+			chosen_card = int(raw_input("Pick Your Card Please %s :  " %player))			
+			try:
+				player.playCard(player.hand[chosen_card])
+			except:
+				print "%s's Cards %s" %(player, player.hand)
+				chosen_card = int(raw_input("Invalid. Pick a different card please %s :  " %player))
+				player.playCard(player.hand[chosen_card])
+			print ""
+			print "pile: %s" %(game.pile)
+			print ""
+			if active_player + 1 > game.size-1:
+				active_player = 0
+			else: active_player += 1
+
+	@classmethod
+	def requestPredictions(cls, game):
+		active_player = game.button_position		
+		for player in range(game.size):
+			player = game.seats[active_player]
+			chosen_card = int(raw_input("%s How many tricks do you think you'll win:  " %player))
+			game.predictions[player] = chosen_card
+			game.trick_count[player] = 0
+			if active_player + 1 > game.size-1:
+				active_player = 0
+			else: active_player += 1
+		print ""
+		print "--Predictions--"
+		print game.predictions
+		print ""
+
+	@classmethod
+	def printGameState(cls, game):
+		print "----------------------------------------------GAMEROUND %s----------------------------------------------" %(game.round-1)
+		print ""
+		print "---------------------subround %s---------------------"%(game.subround)
+		print ""
+		print "---PLAYERS---"
+		print ""
+		for player in game.entrants:
+			print player.__dict__			
+		print ""
+		print "---GAME---"
+		print ""		
+		print game.__dict__
+		print ""
+		print "----GAME---"
+		print ""
+		print ""
+
+	@classmethod
+	def dealCards(cls, game):
+		for i in range(game.round):
+			game.subround += 1
+			for player in game.entrants:
+				card = game.deck.randomCard()
+				player.hand.append(card)
+		game.round += 1
+
+	@classmethod
+	def updateLeaderboard(cls, game):
+		for player in game.entrants:
+			if game.predictions[player] == game.trick_count[player]:
+				game.scoreboard[player] += game.predictions[player] * 10
+			else: game.scoreboard[player] -= abs(game.predictions[player] - game.trick_count[player]) * 10
+
+	@classmethod
+	def start_game(cls, game):
+		Dealer.decideButton(game)
+		for i in range(game.length):				
+			Dealer.dealCards(game)
+			game.subround = 1
+			Dealer.printGameState(game)
+			Dealer.requestPredictions(game)
+			for i in range(game.round-1):
+				Dealer.requestActions(game)
+				game.subround += 1
+				Dealer.printGameState(game)
+				Dealer.declareWinner(game)
+				if game.button_position + 1 > game.size -1:
+					game.button_position = 0
+				else: game.button_position += 1
+			Dealer.updateLeaderboard(game)
+
+	@classmethod
+	def decideButton(cls, game):
+		game.button_position = random.randint(0,game.size-1)
+
+class Game():
+	deck = Deck()
+	def __init__(self, game_id, size, length):
+		self.game_id= game_id
+		self.status = ""
+		self.size = size
+		self.length = length
+		self.entrants = []
+		self.scoreboard = {}
+		self.pile = collections.OrderedDict()
+		self.seats = {}
+		self.round = 1
+		self.subround = 1
+		self.predictions = {}
+		self.trick_count = {}
+		self.button_position = 0
+
+	def __repr__(self):
+		#human readable representation of game object		
+		return "Game ID:" + str(self.game_id)
+	
 
 class Floorman():
-	games = {0:
-		{
-		'id': 0,
-		'players':4,
-        'entrants':["test1","test2","test3"],	        
-		'status': 'test'
-        }	    
-	}
+	active_games = 0
+	id_count = 0
+	games = []
 
-	game_objects = []
-
-	players = {}
-
-	leaderboard = {}			
-
-	def createGame(self, size):
-		self.size = size		
-		Floorman.games[max(Floorman.games)+1] = {
-		'id': max(Floorman.games)+1,
-		'players': size,
-		'entrants': [],
-		'status': 'open'
-		}
-		game = Game(10)
-		game.status = 'open'
-		game.size = size
-		Floorman.game_objects.append(game)
-
-	def listOpenGames(self):
-		open_games = []
-		for i in Floorman.games:
-			if Floorman.games[i]['status'] == 'open':
-				open_games.append(Floorman.games[i])
-		return open_games
-
-	def cancelGame(self, game_id):
-		self.game_id= game_id
-		Floorman.games[game_id]['status'] = "cancelled"
-
-	def updateLeaderboard(self):
-		pass
-
-	def addPlayerToGame(self, player, game):
-		self.player = player
-		self.game = game		
-		self.games[game]['entrants'].append(self.players[player]['name'])
-		self.players[player]['active game'] = game
-		if len(self.games[game]['entrants']) == self.games[game]['players']:
-			self.games[game]['status'] = 'started'
-
-
-	
-	
-
-
-dealer = Dealer()
-floorman = Floorman()
-floorman.createGame(4)
-floorman.createGame(6)
-
-
-"""
-floorman.listOpenGames()
-test_player = Player(1001)
-test_player.name = "Mark"
-test_player.authtoken = "abcdefg"
-test_player.joinPool()
-
-
-print floorman.players
-print floorman.games
-print " ----- "
-floorman.addPlayerToGame(1001,1)
-print floorman.players
-print floorman.games
+	@classmethod
+	def addGame(cls, size, length):
+		game = Game(Floorman.id_count+1, size, length)
+		Floorman.games.append(game)
 
 
 
-name = getattr(Floorman.games[1]['entrants'][0], 'name')
-print name
+
+Floorman.addGame(4,3)
+Floorman.addGame(5,3)	
+
+mark = Player()
+mark.username = "Mark"
+mark.auth_token = "abc"
+
+shannon = Player()
+shannon.username = "Shannon"
+shannon.auth_token = "def"
+
+mike = Player()
+mike.username = "Mike"
+mike.auth_token = "ghi"
+
+de = Player()
+de.username = "Deanne"
+de.auth_token = "jkl"
+
+test_game = Floorman.games[0]
+test_game.status = "running"
+mark.register(test_game)
+shannon.register(test_game)
+de.register(test_game)
+mike.register(test_game)
+
+
+print test_game.__dict__
 
 
 
 
 
 
-floorman.listOpenGames()
-
-userID = 1001
-username = "Mark"
-authtoken = "abcdefg"
-
-player = Player(userID)
-player.name = username
-player.authtoken = authtoken
-
-player.joinGame(1)
-
-floorman.listOpenGames()
-
-
-secondUserID = 1002
-secondUsername = "Shan"
-secondAuthtoken = "hijklmno"
-
-second_player = Player(secondUserID)
-second_player.name = secondUsername
-second_player.authtoken = secondAuthtoken
-
-second_player.joinGame(1)
-
-floorman.listOpenGames()
-"""
-
+#need card objects to remain card objects, not become strings

@@ -11,3 +11,29 @@
 	background-color: grey;
 	float: left;
 }
+
+#ws-game-space {
+	height: 500px;
+	width: 100%;
+	background-color: cyan;
+}
+
+.channel {
+	height: 200px;
+	width: 40%;
+	border: 2px solid black;
+	background-color: #C0C0C0;
+	float: left;
+}
+
+#board {
+	height:50px;
+	width: 200px;
+	border: 2px solid black;
+}
+
+#hand {
+	height:50px;
+	width: 200px;
+	border: 2px solid black;
+}

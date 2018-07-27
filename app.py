@@ -1,13 +1,39 @@
 from flask import Flask, render_template, request, json
+from flask_socketio import SocketIO, send, emit
 import sqlite3
+import time
+
 
 import gamelogic
-import usermanager
-
 
 db = 'wizard.sqlite' 
 app = Flask(__name__)
 app.debug = True
+socketio = SocketIO(app)
+#-----------------------
+@socketio.on('message')
+def handle_message(message):
+    print('received message: ' + message)
+
+@socketio.on('json')
+def handle_json(json):
+    print('received json: ' + str(json))
+
+@socketio.on('connect')
+def handle_establish_connection():
+    print "player connected"
+    time.sleep(5)
+    emit('my_response', "Player Connected", broadcast=True)
+
+@socketio.on('start game')
+def handle_start_game():
+    print "game started"
+    time.sleep(5)
+    emit('game_started', "The game has begun", broadcast=True)
+
+#-----------------------
+
+
 
 @app.route("/")
 def home():
@@ -21,9 +47,15 @@ def showLobby():
 def showGame():
     return render_template('game.html')
 
+@app.route("/game1")
+def showWSGame():
+    return render_template('game1.html')
+
+
+
 
 #routes for getting available games
-@app.route('/getActiveGames',methods=['GET'])
+"""@app.route('/getActiveGames',methods=['GET'])
 def getActiveGames():          
         active_games = gamelogic.floorman.listOpenGames()        
         return json.dumps(active_games)
@@ -81,7 +113,7 @@ def logIn():
             return json.dumps({'username': username, 'token':token})      
         else:
             return "Log in failed"
-
+"""
 #route for shutting down the sserver
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
@@ -94,8 +126,9 @@ def shutdown():
     shutdown_server()
     return 'Server shutting down...'
 
-#route to start the app
 
 if __name__ == "__main__":
-  app.run()
+  #app.run()
+  socketio.run(app)
 
+     
