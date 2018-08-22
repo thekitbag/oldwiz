@@ -15,10 +15,16 @@ socketio = SocketIO(app)
 @socketio.on('connect to lobby')
 def handle_lobby_connection(data):
     player_sid = request.sid
-    player_object = gamelogic.Player()
-    player_object.username = data['data']
-    player_object.sid = player_sid
-    gamelogic.Player.players.add(player_object)
+    if gamelogic.Player.getPlayerByName(data['data']) == "New player":
+        player_object = gamelogic.Player()
+        player_object.username = data['data']
+        player_object.sid = player_sid
+        gamelogic.Player.players.add(player_object)
+        print gamelogic.Player.players
+    else:
+        player = gamelogic.Player.getPlayerByName(data['data'])
+        player.sid = player_sid
+        print gamelogic.Player.players
     emit('player joined', len(gamelogic.Player.players), broadcast=True)
     active_games = [game for game in gamelogic.Floorman.games if game.status == 'open']    
     jsonable_active_games = []

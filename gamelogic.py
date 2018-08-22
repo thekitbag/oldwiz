@@ -71,7 +71,10 @@ class Player():
 	@classmethod
 	def getPlayerByName(cls, name):
 		player = [player for player in Player.players if name == player.username]
-		return player[0]
+		if len(player) > 0:
+			return player[0]
+		else:
+			return "New player"
 
 
 	
@@ -273,24 +276,7 @@ class Floorman():
 Floorman.addGame(4,3)
 Floorman.addGame(5,3)	
 
-mark = Player()
-mark.username = "Mark"
-mark.auth_token = "abc"
 
-shannon = Player()
-shannon.username = "Shannon"
-shannon.auth_token = "def"
-
-mike = Player()
-mike.username = "Mike"
-mike.auth_token = "ghi"
-
-de = Player()
-de.username = "Deanne"
-de.auth_token = "jkl"
-
-test_game = Floorman.games[0]
-test_game.status = "running"
 
 
 
