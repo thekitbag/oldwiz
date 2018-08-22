@@ -1,7 +1,7 @@
 #game-space {
 	height: 500px;
 	width: 100%;
-	background-color: magenta
+	background-color: cyan
 }
 
 .pod {
@@ -12,11 +12,6 @@
 	float: left;
 }
 
-#ws-game-space {
-	height: 500px;
-	width: 100%;
-	background-color: cyan;
-}
 
 .channel {
 	height: 200px;

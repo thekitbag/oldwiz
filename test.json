@@ -1,0 +1,274 @@
+
+
+orchestrator("monopolycasino")           
+
+onEvent("NEW_P2P")  {
+                      actions {
+                                campaign "WJ_DAY_PC_MBOP"
+                                campaign "WJ_MBOP"
+                              }
+                      ifMatch {
+                                whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)" 
+                                 whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+                              }
+                    }
+
+onEvent("kycSuccess") 
+  {
+    actions {
+              campaign "OPT_IN_CAMPAIGN_NON_PTOP"
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+              when "lifetime.firstDepositAmount ==null"
+            }
+  }
+
+onEvent("wager") 
+  {
+   actions {
+              campaign "ONGOING_OPT_IN_CAMPAIGN", ifNotInLast(90.days)
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+              when "lifetime.firstDepositAmount != null"
+            }
+  }
+
+onEvent("deposit") 
+  {
+    actions {
+              campaign "ONGOING_OPT_IN_CAMPAIGN", ifNotInLast(90.days)
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+              when "lifetime.firstDepositAmount != null"
+            }
+  }
+
+onEvent("raf_wj_upload") //change event to p2p when done
+  {
+    actions {
+              campaign "WJ_RAF_CAMPAIGN"
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+              when "EMAIL_OPT_IN != false"
+            }
+  }
+
+
+onEvent("REACTIVATED_PLAYER") {
+                                actions {
+                                          campaign "WB_DAY_PC_MBOP"
+                                        }
+                                ifMatch {
+                                            whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)" 
+                                                            whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+                                        }
+                              }
+
+onEvent("kycSuccess") {   
+                actions {
+                                campaign ("Conversion Welcome Campaign A":50,"Conversion Welcome Campaign B":50)
+                                                }   
+               ifMatch {
+              when "EMAIL_OPT_IN != false"
+                                 when "lastDepositAmount == null"
+                 when "daysSinceRegistration < 90"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+                                }
+}
+
+onEvent("lapse_prevention_upload") {
+                campaign "Lapsed_Prevention"
+}
+
+onEvent("reactivation_upload") {
+                campaign "REACTIVATION_CAMPAIGN"
+}
+
+onEvent("rpro_upload") {
+        campaign "REACTIVATION_PROPENSITY"
+}
+
+onEvent("rpro_deposit_upload") {
+        campaign "REACTIVATION_PROPENSITY_DEPOSIT"
+}
+
+
+onEvent("vip_loyalty_comp_upload") {
+                campaign "VIP_LOYALTY_CAMPAIGN"
+}
+
+onEvent("hvg_loyalty_comp_upload") {
+                campaign "LOYALTY_CAMPAIGN"
+}
+
+
+onEvent("birthday_upload"){
+actions{campaign "NON_VIP_BIRTHDAY_CAMPAIGN"}
+}
+
+
+onEvent("conversion_birthday_upload_a")
+  {campaign "Conversion Birthday Campaign"}
+
+onEvent("conversion_birthday_upload_b")
+  {campaign "Conversion Birthday Campaign B"}
+
+onEvent("login")
+  {
+    actions {
+              campaign "dummy_campaign_a"
+            }
+    ifMatch {
+              math "(event.memberId in [17116935,21509432,17116943])"
+              when "'STAFF_ACCOUNTS' in list(BLACK_LIST_SEGMENT)" 
+            }
+  }
+
+
+onEvent("NEW_P2P") {
+  actions {
+    campaign "NEW_PLAYER_RG"
+                }
+} 
+
+onEvent("wager") { 
+      actions {
+       campaign "POKER_TICKET_DROP"//, clock.today().atStartOfDay()
+
+     ifMatch {
+                                    when "CURRENCY_ID == 1"
+                                                when "today.toDateTime.toString('yyyy-MM-dd') >= '2018-07-31'"
+                                                when "today.toDateTime.toString('yyyy-MM-dd') <= '2018-08-01'"
+                        math "(event.memberId in [20726828,20883841])"
+                        when "'STAFF_ACCOUNTS' in list(BLACK_LIST_SEGMENT)"
+        }
+}
+
+onEvent("wager") {
+        campaign "DAILY_CHIP_AND_A_CHAIR_CAMPAIGN"
+        ifMatch {
+          //when "event.gameTypeId == 19"
+          when "event.wagerAmount > 0"
+           math "(event.memberId in [20726828,20883841])"
+          when "'STAFF_ACCOUNTS' in list(BLACK_LIST_SEGMENT)"
+        }
+      }
+
+onEvent("login") //poker_community_tournament_upload
+  { campaign "POKER_COMMUNITY_TOURNAMENT"
+ifMatch {
+                              math "(event.memberId in [20726828,20883841])"
+                              when "'STAFF_ACCOUNTS' in list(BLACK_LIST_SEGMENT)"
+                                }
+  }
+
+//onEvent("login") {
+  //actions {
+                //campaign "EMAIL_OPT_IN_MBOP", ifNotInLast(90.days)
+  //}
+  //ifMatch {
+                //when "lastDepositAmount != null"
+                //when "EMAIL_OPT_IN == false"
+    //whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+  //}
+//}
+
+
+onEvent("lapse_prevention_upload_1") {
+                campaign "Lapsed_Prevention_Two"
+}
+
+onEvent("vip_lapse_prevention_upload_1") {
+                campaign "VIP_Lapse_Prevention_Two"
+}
+
+onEvent("lapse_prevention_upload_2") {
+                campaign "Lapsed_Prevention_One"
+}
+
+onEvent("vip_lapse_prevention_upload_2") {
+                campaign "VIP_Lapse_Prevention_One"
+}
+
+onEvent("conversion_email_upload_18")                                                                {
+                                      actions {
+                                                campaign "CONVERSION_EMAIL_CAMPAIGN_18"
+                                              }
+                                    }
+
+
+onEvent("conversion_dm_upload_18")                                                     {
+                                      actions {
+                                                campaign "CONVERSION_DM_CAMPAIGN_18"
+                                              }
+             
+                                   }
+
+// E2E testing - MCA
+
+onEvent("welcome_to_vip_callback_upload") { 
+                                            actions {
+                                                      campaign "WELCOME_TO_VIP_CALLBACK"
+                                                    }
+                                          }
+
+onEvent("adobe_send_sms_test_upload") {
+                                        actions {
+                                                  campaign "ADOBE_SEND"
+                                                }
+                                      }
+
+onEvent("campaignOptInChoice")  {
+                                  actions {
+                                            campaign "WELCOME_BUNDLE", ifNotInLast(180.days)
+                                          }
+                                  ifMatch {
+                                            when "event.campaignName == 'WelcomeOffer'"
+                                            when "event.optedIn"
+                                          }
+                                }
+
+
+onEvent("vip_reconsent_upload") // bis will specify vip segment, reconsented, opted out of one plus channel
+  {
+    actions {
+              campaign "VIP_RECONSENT_CAMPAIGN"
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+            }
+  }
+
+onEvent("opt_in_gdpr_upload")
+  {
+    actions {
+              campaign "OPT_IN_GDPR_CAMPAIGN", ifNotInLast(90.days)
+            }
+    ifMatch {
+              whenNot "'BLACK_LIST_INITIAL' in list(BLACK_LIST_SEGMENT)"
+              whenNot "'PROBLEM_GAMBLER' in list(BLACK_LIST_SEGMENT)"
+            }
+  }
+
+
+
+Gavin Deadman
+Product Owner - Incentive
+ 
+4th Floor, 10 Piccadilly
+London, W1J 0DD
+ 
+Email: gavin.deadman@gamesys.co.uk
+Landline: 020 7478 2009
+Mob: 077 6449 5865
+www.gamesyscorporate.com
+Incentive Confluence Space

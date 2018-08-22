@@ -1,18 +1,24 @@
 var user = localStorage.getItem('username');
 
-function populateLobby() {
-	$.ajax({
-			url: '/getActiveGames',
-			type: 'GET',
-			success: function(response){
-				parsed_response = JSON.parse(response);
-				addGamesToList(parsed_response);
-			},
-			error: function(error){
-				console.log(error);
-			}
-		});
-}
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+        socket.on('connect', function() {
+            socket.emit('connect to lobby', {data: user});
+        });
+
+socket.on('player joined', function(number) {
+	document.getElementById('welcome').innerHTML = "Welcome to the lobby " + user
+	document.getElementById('players').innerHTML = "Active players = " + number
+});
+
+socket.on('lobby data', function(data) {	
+        parsed_response = JSON.parse(data);
+		addGamesToList(parsed_response);
+    });
+
+socket.on('registration succesful', function(data) {	
+	localStorage.setItem('active_game',data['game']);
+	window.location.href='/game';
+})
 
 function createElement(type, className, id){
 	a = document.createElement(type);
@@ -26,70 +32,34 @@ function attatchElement(element, target){
 }
 
 
-//[{"entrants": ["Mark"], "id": 1, "players": 4, "status": "open"}, {"entrants": ["Mark"], "id": 2, "players": 5, "status": "open"}]
+//[{"Id": 0, "entrants": [], "id": 2, "size": 5, "status": "open"}]
 function addGamesToList(gamedata){
-	var number_of_games = gamedata.length	
+	var number_of_games = gamedata.length
 	for (var i = 0; i < number_of_games; i++) {
 		var game = createElement("div", "game", "game"+i)
-		attatchElement(game,"games-list");	
-		number_of_data_points = Object.keys(gamedata[i]).length;		
-		for (var j = 0; j < number_of_data_points; j++){
-			var key = Object.keys(gamedata[i])[j];
-			var value = gamedata[i][key];
-			var gameboxinfo = createElement("div", "game-info", "game-"+key);
-			var infotitle = createElement("div", "title", "info-"+key);
-			var infovalue = createElement("div", "value-"+value);
+		attatchElement(game,"games-list");		
+		for (var j = 0; j < 4; j++){
+			titles = ["Game Id", "No. of Players", "Entrants", "Status"]
+			keys = 	["id", "size", "entrants", "status"]		
+			var gameboxinfo = createElement("div", "game-info", "game-"+j);
+			var infotitle = createElement("div", "title", "info-"+j);
+			var infovalue = createElement("div", "value", "value-"+j);
 			attatchElement(gameboxinfo, "game"+i)
 			gameboxinfo.appendChild(infotitle);
 			gameboxinfo.appendChild(infovalue);
-			infotitle.innerHTML = key;
-			infovalue.innerHTML = value;
-		}
+			infotitle.innerHTML = titles[j]
+			infovalue.innerHTML = gamedata[i][keys[j]]			
+		}		
 		var regbutton = createElement("div", "btn reg", "reg"+gamedata[i]['id']);
 		regbutton.innerHTML = "Register";
 		attatchElement(regbutton, "game"+i)
 	}	
 }
 
-function registerUser(tournament){
-	var reg_details = {'username': user, 'gameID':tournament};	
-	$.ajax({
-		type: 'POST',
-		contentType: 'application/json',
-		url: '/registerUser',
-		data: JSON.stringify(reg_details),		
-		success: function(response){
-			if (response == "Registration Succesful"){
-				location.href="/game";
-			} else {
-				console.log(response);				
-			}
-		},
-		error: function(error){
-			console.log(error);
-		}
-	});
-};
-
-function clearLobby() {
-	var listToClear = document.getElementById("games-list")
-	while (listToClear.childNodes.length > 0) {
-		listToClear.removeChild(listToClear.lastChild);
-	}
-}
-
-function refresh() {
-	clearLobby();
-    populateLobby();
-    setTimeout(refresh, 10000);    
-}
 
 $(document).on("click",".reg",function(){
 	buttonid = this.id;
 	tournamentid = buttonid[3];
-	registerUser(tournamentid);			
+	socket.emit('register request', {"username": user, 'gameID':tournamentid})			
 });
 
-$(document).ready(function() {
-    refresh();    
-});

@@ -36,13 +36,18 @@ class Deck():
 
 
 class Player():
+	players = set()
 	member_id_count = 0
 	def __init__(self):
 		self.member_id = self.member_id_count + 1
 		Player.member_id_count += 1
 		self.username = ""
 		self.auth_token = ""
-		self.hand = []	
+		self.hand = []
+		self.sid = ""	
+
+	def __repr__(self):
+		return self.username
 
 	def register(self, game):
 		self.game = game		
@@ -61,10 +66,17 @@ class Player():
 			self.game.pile[self] = card
 			self.hand.remove(card)
 		else: 
-			raise ValueError('invalid move')			
+			raise ValueError('invalid move')	
 
-	def __repr__(self):
-		return self.username
+	@classmethod
+	def getPlayerByName(cls, name):
+		player = [player for player in Player.players if name == player.username]
+		return player[0]
+
+
+	
+
+	
 
 
 class Dealer():
@@ -200,7 +212,7 @@ class Game():
 	deck = Deck()
 	def __init__(self, game_id, size, length):
 		self.game_id= game_id
-		self.status = ""
+		self.status = "open"
 		self.size = size
 		self.length = length
 		self.entrants = []
@@ -227,6 +239,33 @@ class Floorman():
 	def addGame(cls, size, length):
 		game = Game(Floorman.id_count+1, size, length)
 		Floorman.games.append(game)
+		Floorman.id_count += 1
+
+	@classmethod
+	def getGameById(cls, game_id):
+		game = [game for game in Floorman.games if game_id == game.game_id]
+		return game
+
+	@classmethod
+	def getGameAndPlayerByPlayerName(cls, name):
+		for game in Floorman.games:
+			for player in game.entrants:
+				if player.username == name:
+					return {"game":game, "name": player}
+
+	@classmethod
+	def getGameInfo(cls, game_id):
+		game = [game for game in Floorman.games if game_id == game.game_id]
+		gameobj = game[0]
+		game_info = {"status":gameobj.status, "size": gameobj.size, "entrants":[]}
+		for player in gameobj.entrants:
+			game_info['entrants'].append(player.username)
+		return game_info
+
+
+		
+
+	
 
 
 
@@ -252,17 +291,12 @@ de.auth_token = "jkl"
 
 test_game = Floorman.games[0]
 test_game.status = "running"
-mark.register(test_game)
-shannon.register(test_game)
-de.register(test_game)
-mike.register(test_game)
-
-
-print test_game.__dict__
 
 
 
 
 
 
-#need card objects to remain card objects, not become strings
+
+
+

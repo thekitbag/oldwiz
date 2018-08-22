@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, json
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
 import sqlite3
 import time
 
@@ -11,19 +11,55 @@ app = Flask(__name__)
 app.debug = True
 socketio = SocketIO(app)
 #-----------------------
-@socketio.on('message')
-def handle_message(message):
-    print('received message: ' + message)
 
-@socketio.on('json')
-def handle_json(json):
-    print('received json: ' + str(json))
+@socketio.on('connect to lobby')
+def handle_lobby_connection(data):
+    player_sid = request.sid
+    player_object = gamelogic.Player()
+    player_object.username = data['data']
+    player_object.sid = player_sid
+    gamelogic.Player.players.add(player_object)
+    emit('player joined', len(gamelogic.Player.players), broadcast=True)
+    active_games = [game for game in gamelogic.Floorman.games if game.status == 'open']    
+    jsonable_active_games = []
+    for i in range(len(active_games)):
+        game = {"id":0, "size": 0, "entrants": [], "status": ""}
+        players = []
+        game["id"] = active_games[i].game_id
+        game["size"] = active_games[i].size
+        for player in active_games[i].entrants:
+            players.append(player.username)
+        game["entrants"] = players
+        game["status"] = active_games[i].status
+        jsonable_active_games.append(game)
+    emit('lobby data', json.dumps(jsonable_active_games), room=player_sid)    
 
-@socketio.on('connect')
-def handle_establish_connection():
-    print "player connected"
-    time.sleep(5)
-    emit('my_response', "Player Connected", broadcast=True)
+@socketio.on('register request')
+def handle_registration_request(data):
+    jsonData = data       
+    username = str(jsonData['username'])
+    game = gamelogic.Floorman.getGameById(int(jsonData['gameID']))[0]        
+    player = gamelogic.Player.getPlayerByName(username)    
+    player.register(game)
+    if player in game.entrants:
+        emit('registration succesful', {'game': json.dumps(game.game_id)}, room=player.sid)
+    else: return "Registration Failed"   
+    
+@socketio.on('connect to game')
+def handle_game_connection(data):
+    pass
+    #return game data to that user
+
+
+@socketio.on('x event')
+def handle_establish_connection(data):
+    player_sid = request.sid    
+    game = gamelogic.Floorman.getGameAndPlayerByPlayerName(data['data'])['game']
+    player =  gamelogic.Floorman.getGameAndPlayerByPlayerName(data['data'])['name']
+    player.sid = player_sid 
+    gamedata = gamelogic.Floorman.getGameInfo(game.game_id)   
+    emit('confirm_connection', "Player Connected", broadcast=True)
+    emit('game_data', json.dumps(gamedata), broadcast=True)
 
 @socketio.on('start game')
 def handle_start_game():
@@ -53,51 +89,6 @@ def showWSGame():
 
 
 
-
-#routes for getting available games
-"""@app.route('/getActiveGames',methods=['GET'])
-def getActiveGames():          
-        active_games = gamelogic.floorman.listOpenGames()        
-        return json.dumps(active_games)
-        
-
-@app.route('/registerUser',methods=['POST','GET'])
-def registerUser():
-        jsonData = request.get_json()          
-        username = str(jsonData['username'])
-        game = int(jsonData['gameID'])
-        player = gamelogic.Player(1001)
-        player.name = username
-        player.authtoken = "abcdefg"
-        player.joinPool()
-        gamelogic.floorman.addPlayerToGame(player.member_id, game)
-        registered = False
-        if username in gamelogic.Floorman.games[game]['entrants']:
-            registered = True
-        if registered == True:
-            return "Registration Succesful"
-        else: return "Registration Failed"
-        
-
-
-
-@app.route('/getGameInfo', methods=['POST', 'GET'])
-def getGameInfo():
-    data = request.get_json()
-    user = data['member_id']
-    user_game_id = gamelogic.Floorman.players[user]['active game']
-    if gamelogic.Floorman.games[user_game_id]['status'] == 'open':
-        return json.dumps(gamelogic.Floorman.games[user_game_id])
-    elif gamelogic.Floorman.games[user_game_id]['status'] == 'started':
-        game = gamelogic.Game(user_game_id)
-        game.status == 'running'
-        game.size = gamelogic.Floorman.games[user_game_id]['players']
-        dealer = gamelogic.Dealer()
-        dealer.buildDeck()
-        game.deck = dealer.deck
-        return json.dumps(game.deck)
-        
-
 #routes for user management  
 @app.route('/log-in',methods=['POST','GET'])
 def logIn():
@@ -109,11 +100,27 @@ def logIn():
         c.execute("SELECT MEMBER_ID FROM USERS WHERE USERNAME = ? AND PASSWORD_HASH= ?;", (username, password))        
         results = c.fetchall()
         if len(results) > 0:
-            token = usermanager.createToken()
-            return json.dumps({'username': username, 'token':token})      
+            return json.dumps({'username': username})      
         else:
             return "Log in failed"
-"""
+
+
+#routes for getting available games
+
+
+@app.route('/registerUser',methods=['POST','GET'])
+def registerUser():        
+        jsonData = request.get_json()          
+        username = str(jsonData['username'])
+        game = gamelogic.Floorman.getGameById(int(jsonData['gameID']))[0]        
+        player = gamelogic.Player.getPlayerByName(username)    
+        player.register(game)
+        if player in game.entrants:
+            gamedata = gamelogic.Floorman.getGameInfo(game.game_id)
+            emit('registration succesful', {'game': game}, room=player.sid)
+        else: return "Registration Failed"
+       
+
 #route for shutting down the sserver
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
