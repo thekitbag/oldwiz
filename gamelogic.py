@@ -1,5 +1,6 @@
 import random
 import collections
+from flask import json
 
 class Card():
 	suits = ["none","A","B","C","D"]
@@ -38,10 +39,10 @@ class Deck():
 class Player():
 	players = set()
 	member_id_count = 0
-	def __init__(self):
+	def __init__(self, username):
 		self.member_id = self.member_id_count + 1
 		Player.member_id_count += 1
-		self.username = ""
+		self.username = username
 		self.auth_token = ""
 		self.hand = []
 		self.sid = ""	
@@ -250,20 +251,40 @@ class Floorman():
 		return game
 
 	@classmethod
-	def getGameAndPlayerByPlayerName(cls, name):
-		for game in Floorman.games:
-			for player in game.entrants:
-				if player.username == name:
-					return {"game":game, "name": player}
-
-	@classmethod
 	def getGameInfo(cls, game_id):
 		game = [game for game in Floorman.games if game_id == game.game_id]
 		gameobj = game[0]
 		game_info = {"status":gameobj.status, "size": gameobj.size, "entrants":[]}
 		for player in gameobj.entrants:
 			game_info['entrants'].append(player.username)
-		return game_info
+		return json.dumps(game_info)
+
+	@classmethod
+	def getActiveGames(cls):
+		active_games = [game for game in Floorman.games if game.status == 'open']
+		jsonable_active_games = []
+		number_of_games = len(active_games)
+		for i in range(number_of_games):
+			gamedata = {"id":0, "size":0, "entrants":[]}
+			gamedata['id'] = active_games[i].game_id
+			gamedata['size'] = active_games[i].size
+			gamedata['status'] = active_games[i].status
+			playernames = []
+			for player in active_games[i].entrants:
+				playernames.append(player.username)
+			gamedata['entrants'] = playernames
+			jsonable_active_games.append(gamedata)
+		return json.dumps(jsonable_active_games)
+		
+
+	@classmethod
+	def getEntrantList(cls, game):
+		entrantlist = []
+		for player in game.entrants:
+			entrantlist.append(player.username)
+		data ={"game": game.game_id, "entrants":entrantlist} 
+		return json.dumps(data)
+
 
 
 		
@@ -274,7 +295,9 @@ class Floorman():
 
 
 Floorman.addGame(4,3)
-Floorman.addGame(5,3)	
+Floorman.addGame(5,3)
+
+
 
 
 

@@ -10,63 +10,41 @@ db = 'wizard.sqlite'
 app = Flask(__name__)
 app.debug = True
 socketio = SocketIO(app)
+
+
 #-----------------------
 
 @socketio.on('connect to lobby')
-def handle_lobby_connection(data):
-    player_sid = request.sid
-    if gamelogic.Player.getPlayerByName(data['data']) == "New player":
-        player_object = gamelogic.Player()
-        player_object.username = data['data']
-        player_object.sid = player_sid
-        gamelogic.Player.players.add(player_object)
-        print gamelogic.Player.players
-    else:
-        player = gamelogic.Player.getPlayerByName(data['data'])
-        player.sid = player_sid
-        print gamelogic.Player.players
-    emit('player joined', len(gamelogic.Player.players), broadcast=True)
-    active_games = [game for game in gamelogic.Floorman.games if game.status == 'open']    
-    jsonable_active_games = []
-    for i in range(len(active_games)):
-        game = {"id":0, "size": 0, "entrants": [], "status": ""}
-        players = []
-        game["id"] = active_games[i].game_id
-        game["size"] = active_games[i].size
-        for player in active_games[i].entrants:
-            players.append(player.username)
-        game["entrants"] = players
-        game["status"] = active_games[i].status
-        jsonable_active_games.append(game)
-    emit('lobby data', json.dumps(jsonable_active_games), room=player_sid)    
+def handle_lobby_connection(data):     
+    games = gamelogic.Floorman.getActiveGames()    
+    emit('lobby data', games, room=request.sid)    
 
 @socketio.on('register request')
-def handle_registration_request(data):
-    jsonData = data       
-    username = str(jsonData['username'])
-    game = gamelogic.Floorman.getGameById(int(jsonData['gameID']))[0]        
-    player = gamelogic.Player.getPlayerByName(username)    
+def handle_registration_request(data):      
+    username = str(data['username'])
+    game = gamelogic.Floorman.getGameById(int(data['gameID']))[0]        
+    player = gamelogic.Player(username)
+    gamelogic.Player.players.add(player)      
     player.register(game)
+    playerlist = gamelogic.Floorman.getEntrantList(game)
     if player in game.entrants:
-        emit('registration succesful', {'game': json.dumps(game.game_id)}, room=player.sid)
-    else: return "Registration Failed"   
+        emit('registration succesful', room=request.sid)                       
+        emit('lobby update', playerlist,  broadcast=True) 
+    else: return "Registration Failed"  
+    for player in game.entrants:
+        emit('new player registered', playerlist, room=player.sid)
+
     
 @socketio.on('connect to game')
 def handle_game_connection(data):
-    pass
-    #return game data to that user
-
-
-@socketio.on('x event')
-def handle_establish_connection(data):
-    player_sid = request.sid    
-    game = gamelogic.Floorman.getGameAndPlayerByPlayerName(data['data'])['game']
-    player =  gamelogic.Floorman.getGameAndPlayerByPlayerName(data['data'])['name']
-    player.sid = player_sid 
-    gamedata = gamelogic.Floorman.getGameInfo(game.game_id)   
-    emit('confirm_connection', "Player Connected", broadcast=True)
-    emit('game_data', json.dumps(gamedata), broadcast=True)
-
+    playername = data['data']    
+    player_object = gamelogic.Player.getPlayerByName(playername)
+    player_sid = request.sid 
+    player_object.sid = player_sid    
+    game = player_object.game
+    gamedata = gamelogic.Floorman.getGameInfo(game.game_id)
+    emit('game data', json.dumps(gamedata), room=player_sid)    
+    
 @socketio.on('start game')
 def handle_start_game():
     print "game started"
