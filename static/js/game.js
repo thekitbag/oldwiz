@@ -1,4 +1,6 @@
-var user = localStorage.getItem('username');
+var username = ""
+var my_pod_id = ""
+
 
 function createElement(type, className, id){
 	a = document.createElement(type);
@@ -13,8 +15,12 @@ function attatchElement(element, target){
 
 var socket = io.connect('http://' + document.domain + ':' + location.port);
         socket.on('connect', function() {
-            socket.emit('connect to game', {data: user});           
+            socket.emit('connect to game');           
         });
+
+socket.on('update username', function(data) {
+	username = data;
+});
 
 socket.on('game data', function(data) {			
         parsed_response = JSON.parse(data);
@@ -27,7 +33,20 @@ socket.on('new player registered', function(update_data) {
 		data = JSON.parse(update_data);
 		updateEntrants(data);
 		});
-    //});
+
+socket.on('game started', function(data) {
+		//layout the game space
+		layoutGameSpace();		
+		setTimeout(function(){ socket.emit('game ready', data); }, 3000);		
+		});
+
+socket.on('hole cards', function(data) {
+		layoutGameSpace();
+		card = createElement("div", "card", "card1")
+		attatchElement(card, my_pod_id);
+		card.innerHTML = data;
+		});
+
 
 
 function createElement(type, className, id){
@@ -53,6 +72,14 @@ function displayGameInfo(game_data) {
 			pod1.innerHTML = game_data['entrants'][i];
 		};		
 	};
+	for (var i = 0; i < game_data['entrants'].length; i++){	
+		pod1 = document.getElementById("pod"+i)
+		if (pod1.innerHTML == username) {
+			pod1.style.backgroundColor  = "pink";
+			my_pod_id = pod1.id;
+			console.log(my_pod_id);
+		};
+	};
 };
 
 function updateEntrants(data) {	
@@ -63,3 +90,8 @@ function updateEntrants(data) {
 		};		
 	};
 };
+
+function layoutGameSpace() {
+	document.getElementById("game-space").style.backgroundColor  = "green";
+	var pods = document.getElementsByClassName("pod");
+}

@@ -2,6 +2,7 @@ import random
 import collections
 from flask import json
 
+
 class Card():
 	suits = ["none","A","B","C","D"]
 	ranks = ["0","1","2","3","4","5","6","7","8","9","10","11","12","13"]
@@ -40,23 +41,29 @@ class Player():
 	players = set()
 	member_id_count = 0
 	def __init__(self, username):
-		self.member_id = self.member_id_count + 1
-		Player.member_id_count += 1
-		self.username = username
-		self.auth_token = ""
-		self.hand = []
-		self.sid = ""	
+		if Player.checkIfPlayerAlreadyExists(username) == False:
+			self.member_id = self.member_id_count + 1
+			Player.member_id_count += 1
+			self.username = username
+			self.auth_token = ""
+			self.hand = []
+			self.sid = ""	
 
 	def __repr__(self):
 		return self.username
 
 	def register(self, game):
-		self.game = game		
-		game.scoreboard[self] = 0
-		current_player_count = len(game.entrants)
-		game.seats[current_player_count] = self
-		game.entrants.append(self)
-		game.trick_count[self] = 0	
+		if Floorman.validateRegistration(self, game) == True:
+			self.game = game		
+			game.scoreboard[self] = 0
+			current_player_count = len(game.entrants)
+			game.seats[current_player_count] = self
+			game.entrants.append(self)
+			game.trick_count[self] = 0
+			if len(game.entrants) == game.size:
+				game.status = "starting"				
+				return "game full"
+		else: return "Registration failed"	
 
 	def playCard(self, card):		
 		if Dealer.is_valid_move(card, self.game.pile, self.hand) ==  "first card":
@@ -76,6 +83,15 @@ class Player():
 			return player[0]
 		else:
 			return "New player"
+
+	@classmethod
+	def checkIfPlayerAlreadyExists(cls, playername):
+		existingplayers = []
+		for i in Player.players:
+			existingplayers.append(i.username)
+		if playername in existingplayers:
+			return True
+		else: return False
 
 
 	
@@ -181,6 +197,7 @@ class Dealer():
 			for player in game.entrants:
 				card = game.deck.randomCard()
 				player.hand.append(card)
+		print game.__dict__
 		game.round += 1
 
 	@classmethod
@@ -197,9 +214,9 @@ class Dealer():
 			Dealer.dealCards(game)
 			game.subround = 1
 			Dealer.printGameState(game)
-			Dealer.requestPredictions(game)
+			#Dealer.requestPredictions(game)
 			for i in range(game.round-1):
-				Dealer.requestActions(game)
+				#Dealer.requestActions(game)
 				game.subround += 1
 				Dealer.printGameState(game)
 				Dealer.declareWinner(game)
@@ -228,10 +245,16 @@ class Game():
 		self.predictions = {}
 		self.trick_count = {}
 		self.button_position = 0
+		self.clients_ready = 0
 
 	def __repr__(self):
 		#human readable representation of game object		
 		return "Game ID:" + str(self.game_id)
+
+	def updateClientsReady(self):
+		self.clients_ready += 1
+		if self.clients_ready == self.size:
+			self.status = "started"
 	
 
 class Floorman():
@@ -248,7 +271,7 @@ class Floorman():
 	@classmethod
 	def getGameById(cls, game_id):
 		game = [game for game in Floorman.games if game_id == game.game_id]
-		return game
+		return game[0]
 
 	@classmethod
 	def getGameInfo(cls, game_id):
@@ -285,6 +308,32 @@ class Floorman():
 		data ={"game": game.game_id, "entrants":entrantlist} 
 		return json.dumps(data)
 
+	@classmethod
+	def validateRegistration(cls, player, game):
+		""" checks if player is eligible to register for this game"""
+		game_open = False
+		Player_already_registered = True
+		if player not in game.entrants:
+			Player_already_registered = False
+		if game.status == "open":
+			game_open = True
+		if game_open == True and Player_already_registered == False:
+			return True
+		else: return False
+
+class Messages():
+	@classmethod
+	def sendLobbyData(cls, sid):
+		games = Floorman.getActiveGames()
+		emit('lobby data', games, room=sid)
+
+
+
+		
+
+
+
+
 
 
 		
@@ -294,11 +343,16 @@ class Floorman():
 
 
 
-Floorman.addGame(4,3)
+Floorman.addGame(3,3)
 Floorman.addGame(5,3)
 
 
 
+mark = Player("Mark")
+shannon = Player("Shannon")
+steve = Player("steve")
+mike = Player("mike")
+de = Player("de")
 
 
 

@@ -15,10 +15,15 @@ socket.on('lobby data', function(data) {
 socket.on('lobby update', function(data) {
 		parsed_data = JSON.parse(data)
 		var game = parsed_data['game']
-		console.log(game);
 		var elementid = 'game' + game + 'valueEntrants'
 		document.getElementById(elementid).innerHTML = parsed_data['entrants']
     });
+
+socket.on('test', function(data) {
+	alert(data);
+}
+
+	)
 
 socket.on('registration succesful', function(data) {
 	window.location.href='/game';
